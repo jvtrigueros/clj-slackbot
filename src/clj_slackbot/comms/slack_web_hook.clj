@@ -9,30 +9,25 @@
   (:gen-class))
 
 (defn post-to-slack
-  ([post-url s channel]
-   (let [p (if channel {:channel channel} {})]
-     (client/post post-url
-                  {:content-type :json
-                   :form-params  (assoc p :text s)
-                   :query-params {"parse" "none"}})))
   ([post-url s]
-   (post-to-slack post-url s nil)))
+   (client/post post-url
+                {:content-type :json
+                 :form-params  {:text s
+                                :response_type "in_channel"}
+                 :debug        true
+                 :debug-body   true})))
 
 (defn handle-clj [params command-token cin]
   (if-not (= (:token params) command-token)
     {:status 403 :body "Unauthorized"}
-    (let [channel (condp = (:channel_name params)
-                    "directmessage" (str "@" (:user_name params))
-                    "privategroup" (:channel_id params)
-                    (str "#" (:channel_name params)))]
+    (let [{:keys [response_url user_name text]} params]
+
       ;; send the form to our evaluator and get out of here
-      (>!! cin {:input (:text params)
-                :meta  {:channel      channel
-                        :response-url (:response_url params)
-                        :user (:user_name params)}})
+      (>!! cin {:input text
+                :meta  {:response-url response_url
+                        :user         user_name}})
 
-      {:status 200 :body "..." :headers {"Content-Type" "text/plain"}})))
-
+      {:status 200 :body (str "Calculating stats for " text) :headers {"Content-Type" "text/plain"}})))
 
 (defn start [{:keys [port command-token]}]
   ;; check we have everything
@@ -43,21 +38,19 @@
   (let [cin (async/chan 10)
         cout (async/chan 10)
         app (-> (routes
-                  (POST "/clj" req (handle-clj (:params req)
-                                               command-token
-                                               cin))
+                  (POST "/overwatch" req (handle-clj (:params req)
+                                                     command-token
+                                                     cin))
                   (route/not-found "Not Found"))
                 (wrap-defaults api-defaults))]
     ;; start the loops we need to read back eval responses
     (go-loop [res (<!! cout)]
       (if-not res
         (println "The form output channel has been closed. Leaving listen loop.")
-        (let [channel (get-in res [:meta :channel])
-              post-url (get-in res [:meta :response-url])]
+        (let [post-url (get-in res [:meta :response-url])]
           (post-to-slack
             post-url
-            (util/format-result-for-slack res)
-            channel)
+            (util/format-result-for-slack res))
           (recur (<!! cout)))))
 
     ;; start web listener
