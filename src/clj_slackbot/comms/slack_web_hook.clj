@@ -13,9 +13,7 @@
    (client/post post-url
                 {:content-type :json
                  :form-params  {:text s
-                                :response_type "in_channel"}
-                 :debug        true
-                 :debug-body   true})))
+                                :response_type "in_channel"}})))
 
 (defn handle-clj [params command-token cin]
   (if-not (= (:token params) command-token)

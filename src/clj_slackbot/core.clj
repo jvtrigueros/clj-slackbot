@@ -21,7 +21,7 @@
       (println ":: waiting for input")
       (if-let [form (<! in)]
         (let [input (:input form)
-              res (evaluator/eval-expr input)]
+              res (evaluator/eval-expr input)] ; TODO: Instead of calling evaluator, call a different function that fetches info from the Overwatch API
           (println ":: form >> " input)
           (println ":: => " res)
           (>! out (assoc form :evaluator/result res))
