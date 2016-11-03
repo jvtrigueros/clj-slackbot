@@ -1,4 +1,7 @@
-(ns slack-overwatch.core)
+(ns slack-overwatch.core
+  (:require [cheshire.core :refer [parse-string]]
+            [clojure.string :as str]
+            [clj-http.client :as client]))
 
 (def sample-attachment
   [{:pretext     "Competitive ranking for *trigoman*."
@@ -17,3 +20,18 @@
               :value "64/73"
               :short true}]
     :ts     1478149069}])
+
+(def overwatch-api "https://api.lootbox.eu")
+
+(defn player-profile [gamer-tag]
+  (let [platform "pc"
+        region "us"
+        tag (str/replace gamer-tag #"#" "-")
+        operation "profile"]
+    (parse-string
+      (:body
+        (client/get
+          (str/join "/" [overwatch-api platform region tag operation])
+          {:insecure? true}))
+      true)))
+
