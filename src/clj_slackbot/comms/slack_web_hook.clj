@@ -5,14 +5,15 @@
             [clj-http.client :as client]
             [clojure.core.async :as async :refer [>!! <!! go-loop]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
-            [org.httpkit.server :refer [run-server]])
+            [org.httpkit.server :refer [run-server]]
+            [slack-overwatch.core :as overwatch])
   (:gen-class))
 
 (defn post-to-slack
   ([post-url s]
    (client/post post-url
                 {:content-type :json
-                 :form-params  {:text s
+                 :form-params  {:attachments   overwatch/sample-attachment
                                 :response_type "in_channel"}})))
 
 (defn handle-clj [params command-token cin]
