@@ -13,7 +13,7 @@
   ([post-url s]
    (client/post post-url
                 {:content-type :json
-                 :form-params  {:text          (get-in s [:data :competitive :rank])
+                 :form-params  {:attachments   s
                                 :response_type "in_channel"}})))
 
 (defn handle-clj [params command-token cin]
@@ -50,7 +50,7 @@
               profile (:profile res)]
           (post-to-slack
             post-url
-            profile
+            (overwatch/profile->attachment profile)
             #_(util/format-result-for-slack res))
           (recur (<!! cout)))))
 

@@ -3,25 +3,30 @@
             [clojure.string :as str]
             [clj-http.client :as client]))
 
-(def sample-attachment
-  [{:pretext     "Competitive ranking for *trigoman*."
-    :mrkdwn_in   ["pretext"]
-    :author_name "trigoman#1562"
-    :author_link "https://api.lootbox.eu/pc/us/trigoman-1562/profile"
-    :author_icon "https://blzgdapipro-a.akamaihd.net/game/unlocks/0x02500000000007D1.png"
-    :thumb_url   "https://blzgdapipro-a.akamaihd.net/game/rank-icons/season-2/rank-3.png"
-    :fields      [{:title "Rank"
-                   :value "2007"
-                   :short true}]}
-   {:fields [{:title "Level"
-              :value "120"
-              :short true}
-             {:title "Win/Loss"
-              :value "64/73"
-              :short true}]
-    :ts     1478149069}])
-
 (def overwatch-api "https://api.lootbox.eu")
+
+(defn- create-field [title value short?]
+  {:title title
+   :value value
+   :short short?})
+
+(defn profile->attachment
+  [{:keys [data] :as profile}]
+  (let [author-name (:username data)
+        author-icon (:avatar data)
+        {:keys [rank rank_img]} (:competitive data)
+        level (:level data)
+        {:keys [wins lost]} (get-in data [:games :competitive])]
+    [{:pretext (str "Competitive ranking for *" author-name "*!")
+      :mrkdwn_in ["pretext"]
+      :author_name author-name
+      :author_icon author-icon
+      :thumb_url rank_img
+      :fields [(create-field "Rank" rank false)]}
+     {:fields [(create-field "Level" level true)
+               (create-field "Win/Loss" (str/join "/" [wins lost]) true)]
+      :ts (quot (System/currentTimeMillis) 1000)}]))
+
 
 (defn player-profile [gamer-tag]
   (let [platform "pc"
