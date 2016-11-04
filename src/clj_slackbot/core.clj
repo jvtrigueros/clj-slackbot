@@ -2,7 +2,8 @@
    (:require [clj-slackbot.config :as config]
              [clj-slackbot.util :as util]
              [clj-slackbot.evaluator :as evaluator]
-             [clojure.core.async :as async :refer [>! <! go go-loop]])
+             [clojure.core.async :as async :refer [>! <! go go-loop]]
+             [slack-overwatch.core :as overwatch])
    (:import java.lang.Thread)
   (:gen-class))
 
@@ -20,11 +21,11 @@
     (go-loop [[in out stop] (inst-comm)]
       (println ":: waiting for input")
       (if-let [form (<! in)]
-        (let [input (:input form)
-              res (evaluator/eval-expr input)] ; TODO: Instead of calling evaluator, call a different function that fetches info from the Overwatch API
-          (println ":: form >> " input)
+        (let [gamer-tag (:input form)
+              res (overwatch/player-profile gamer-tag)]
+          (println ":: form >> " gamer-tag)
           (println ":: => " res)
-          (>! out (assoc form :evaluator/result res))
+          (>! out (assoc form :profile res))
           (recur [in out stop]))
 
         ;; something wrong happened, re init

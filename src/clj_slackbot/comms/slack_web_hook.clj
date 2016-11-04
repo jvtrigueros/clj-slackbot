@@ -13,7 +13,7 @@
   ([post-url s]
    (client/post post-url
                 {:content-type :json
-                 :form-params  {:attachments   overwatch/sample-attachment
+                 :form-params  {:text          (get-in s [:data :competitive :rank])
                                 :response_type "in_channel"}})))
 
 (defn handle-clj [params command-token cin]
@@ -46,10 +46,12 @@
     (go-loop [res (<!! cout)]
       (if-not res
         (println "The form output channel has been closed. Leaving listen loop.")
-        (let [post-url (get-in res [:meta :response-url])]
+        (let [post-url (get-in res [:meta :response-url])
+              profile (:profile res)]
           (post-to-slack
             post-url
-            (util/format-result-for-slack res))
+            profile
+            #_(util/format-result-for-slack res))
           (recur (<!! cout)))))
 
     ;; start web listener
