@@ -3,7 +3,7 @@
             [clojure.string :as str]
             [clj-http.client :as client]))
 
-(def overwatch-api "https://api.lootbox.eu")
+(def overwatch-api "http://ow-api.herokuapp.com")
 
 (defn- create-field [title value short?]
   {:title title
@@ -11,16 +11,16 @@
    :short short?})
 
 (defn profile->attachment
-  [{:keys [data] :as profile}]
+  [data]
   (let [author-name (:username data)
-        author-icon (:avatar data)
+        ;author-icon (:avatar data)
         {:keys [rank rank_img]} (:competitive data)
         level (:level data)
         {:keys [wins lost]} (get-in data [:games :competitive])]
     [{:pretext (str "Competitive ranking for *" author-name "*!")
       :mrkdwn_in ["pretext"]
       :author_name author-name
-      :author_icon author-icon
+      ;:author_icon author-icon
       :thumb_url rank_img
       :fields [(create-field "Rank" rank false)]}
      {:fields [(create-field "Level" level true)
@@ -36,7 +36,6 @@
     (parse-string
       (:body
         (client/get
-          (str/join "/" [overwatch-api platform region tag operation])
-          {:insecure? true}))
+          (str/join "/" [overwatch-api operation platform region tag])))
       true)))
 
