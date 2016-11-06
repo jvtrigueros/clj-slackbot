@@ -1,4 +1,4 @@
-(defproject clj-slackbot "0.1.0-SNAPSHOT"
+(defproject slack-overwatch "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :min-lein-version "2.0.0"
@@ -12,8 +12,11 @@
                  [stylefruits/gniazdo "0.4.1"]
                  [ring/ring-defaults "0.1.5"]
                  [http-kit "2.1.18"]]
-  :plugins [[lein-ring "0.9.7"]]
-  :uberjar-name "clj-slackbot.jar"
+  :plugins [[lein-ring "0.9.7"]
+            [lein-heroku "0.5.3"]]
+  :uberjar-name "slack-overwatch.jar"
+  :heroku {:app-name "slack-overwatch"
+           :include-files ["target/slack-overwatch.jar" "config.edn"]}
   :main clj-slackbot.core
   :profiles
   {:dev     {:dependencies [[javax.servlet/servlet-api "2.5"]
