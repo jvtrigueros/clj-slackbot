@@ -22,10 +22,11 @@
       :author_name author-name
       ;:author_icon author-icon
       :thumb_url rank_img
-      :fields [(create-field "Rank" rank false)]}
-     {:fields [(create-field "Level" level true)
-               (create-field "Win/Loss" (str/join "/" [wins lost]) true)]
-      :ts (quot (System/currentTimeMillis) 1000)}]))
+      :fields [(create-field "Rank" rank true)
+               (create-field "Win/Loss" (str/join "/" [wins lost]) true)]}
+     #_{:fields [(create-field "Level" level true)
+                 (create-field "Win/Loss" (str/join "/" [wins lost]) true)]}
+      :ts (quot (System/currentTimeMillis) 1000)]))
 
 
 (defn player-profile [gamer-tag]
